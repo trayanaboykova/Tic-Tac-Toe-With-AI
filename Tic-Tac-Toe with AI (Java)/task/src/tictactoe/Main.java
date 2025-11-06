@@ -5,9 +5,44 @@ import java.util.Scanner;
 
 public class Main {
 
+    private static final Random random = new Random();
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        while (true) {
+            System.out.print("Input command: ");
+            String line = scanner.nextLine().trim();
+
+            if ("exit".equals(line)) {
+                break;
+            }
+
+            String[] parts = line.split("\\s+");
+            if (parts.length != 3 || !"start".equals(parts[0])) {
+                System.out.println("Bad parameters!");
+                continue;
+            }
+
+            String xType = parts[1];
+            String oType = parts[2];
+
+            if (!isValidPlayerType(xType) || !isValidPlayerType(oType)) {
+                System.out.println("Bad parameters!");
+                continue;
+            }
+
+            playGame(scanner, xType, oType);
+        }
+    }
+
+    private static boolean isValidPlayerType(String type) {
+        return "user".equals(type) || "easy".equals(type);
+    }
+
+    // ---------------- game loop ----------------
+
+    private static void playGame(Scanner scanner, String xType, String oType) {
         // empty board
         char[][] board = new char[3][3];
         for (int i = 0; i < 3; i++) {
@@ -18,14 +53,16 @@ public class Main {
 
         printBoard(board);
 
-        boolean playerTurn = true; // X starts
+        char current = 'X';
 
         while (true) {
-            if (playerTurn) {
-                makePlayerMove(scanner, board);   // X
-            } else {
+            String currentType = (current == 'X') ? xType : oType;
+
+            if ("user".equals(currentType)) {
+                makeUserMove(scanner, board, current);
+            } else { // easy AI
                 System.out.println("Making move level \"easy\"");
-                makeEasyMove(board);              // O
+                makeEasyMove(board, current);
             }
 
             printBoard(board);
@@ -36,13 +73,13 @@ public class Main {
                 break;
             }
 
-            playerTurn = !playerTurn;
+            current = (current == 'X') ? 'O' : 'X';
         }
     }
 
-    // ---------- moves ----------
+    // ---------------- moves ----------------
 
-    private static void makePlayerMove(Scanner scanner, char[][] board) {
+    private static void makeUserMove(Scanner scanner, char[][] board, char symbol) {
         while (true) {
             System.out.print("Enter the coordinates: ");
             String line = scanner.nextLine().trim();
@@ -75,22 +112,21 @@ public class Main {
                 continue;
             }
 
-            board[r][c] = 'X';
+            board[r][c] = symbol;
             break;
         }
     }
 
-    private static void makeEasyMove(char[][] board) {
-        Random random = new Random();
+    private static void makeEasyMove(char[][] board, char symbol) {
         int r, c;
         do {
             r = random.nextInt(3);
             c = random.nextInt(3);
         } while (board[r][c] != ' ');
-        board[r][c] = 'O';
+        board[r][c] = symbol;
     }
 
-    // ---------- board & state helpers ----------
+    // ---------------- helpers ----------------
 
     private static void printBoard(char[][] board) {
         System.out.println("---------");
@@ -156,6 +192,7 @@ public class Main {
                 board[2][0] == player) {
             return true;
         }
+
         return false;
     }
 }

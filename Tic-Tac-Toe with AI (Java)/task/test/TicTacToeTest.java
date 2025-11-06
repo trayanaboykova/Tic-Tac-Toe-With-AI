@@ -4,16 +4,47 @@ import org.hyperskill.hstest.testcase.CheckResult;
 import org.hyperskill.hstest.testing.TestedProgram;
 import utils.*;
 
+import java.util.List;
+
+
 public class TicTacToeTest extends StageTest<String> {
 
     int[] easyAiMoves = new int[9];
+
+    @DynamicTest(order = 0)
+    CheckResult testBadParameters() {
+
+        TestedProgram program = new TestedProgram();
+        program.start();
+
+        String output = program.execute("start");
+        if (!output.toLowerCase().contains("bad parameters")) {
+            return CheckResult.wrong("After entering start command with wrong parameters you should print 'Bad parameters!' and ask to enter a command again!");
+        }
+
+        output = program.execute("start easy");
+        if (!output.toLowerCase().contains("bad parameters")) {
+            return CheckResult.wrong("After entering start command with wrong parameters you should print 'Bad parameters!' and ask to enter a command again!");
+        }
+
+        program.execute("exit");
+
+        if (!program.isFinished()) {
+            return CheckResult.wrong("After entering 'exit' command you should stop the program!");
+        }
+
+        return CheckResult.correct();
+    }
+
 
     @DynamicTest(order = 1)
     CheckResult testGridOutput() {
 
         TestedProgram program = new TestedProgram();
 
-        String output = program.start();
+        program.start();
+
+        String output = program.execute("start user easy");
 
         Grid printedGrid = Grid.fromOutput(output);
         Grid emptyGrid = Grid.fromLine("_________");
@@ -38,9 +69,7 @@ public class TicTacToeTest extends StageTest<String> {
                 "Correct grid:\n" + correctGridAfterMove);
         }
 
-
-
-        if (!output.toLowerCase().replace("'", "\"") .contains("making move level \"easy\"")) {
+        if (!output.toLowerCase().replace("'", "\"").contains("making move level \"easy\"")) {
             return CheckResult.wrong("After entering a cell coordinates you should print:\nMaking move level \"easy\"");
         }
 
@@ -101,6 +130,8 @@ public class TicTacToeTest extends StageTest<String> {
     CheckResult checkEasyAi() {
         TestedProgram program = new TestedProgram();
         program.start();
+
+        program.execute("start user easy");
 
         String output = program.execute("2 2");
 
@@ -181,6 +212,22 @@ public class TicTacToeTest extends StageTest<String> {
         if (!isEasyNotMovingLikeMedium) {
             return CheckResult.wrong("Looks like your Easy level AI doesn't make a random move!");
         }
+        return CheckResult.correct();
+    }
+
+
+    @DynamicTest(order = 6)
+    CheckResult checkEasyVsEasy() {
+
+        TestedProgram program = new TestedProgram();
+        program.start();
+
+        String output = program.execute("start easy easy");
+
+        List<Grid> gridList = Grid.allGridsFromOutput(output);
+
+        Grid.checkGridSequence(gridList);
+
         return CheckResult.correct();
     }
 }
