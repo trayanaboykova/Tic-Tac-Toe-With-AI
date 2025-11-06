@@ -37,13 +37,12 @@ public class Main {
     }
 
     private static boolean isValidPlayerType(String type) {
-        return "user".equals(type) || "easy".equals(type);
+        return "user".equals(type) || "easy".equals(type) || "medium".equals(type);
     }
 
     // ---------------- game loop ----------------
 
     private static void playGame(Scanner scanner, String xType, String oType) {
-        // empty board
         char[][] board = new char[3][3];
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -58,11 +57,18 @@ public class Main {
         while (true) {
             String currentType = (current == 'X') ? xType : oType;
 
-            if ("user".equals(currentType)) {
-                makeUserMove(scanner, board, current);
-            } else { // easy AI
-                System.out.println("Making move level \"easy\"");
-                makeEasyMove(board, current);
+            switch (currentType) {
+                case "user":
+                    makeUserMove(scanner, board, current);
+                    break;
+                case "easy":
+                    System.out.println("Making move level \"easy\"");
+                    makeEasyMove(board, current);
+                    break;
+                case "medium":
+                    System.out.println("Making move level \"medium\"");
+                    makeMediumMove(board, current);
+                    break;
             }
 
             printBoard(board);
@@ -124,6 +130,45 @@ public class Main {
             c = random.nextInt(3);
         } while (board[r][c] != ' ');
         board[r][c] = symbol;
+    }
+
+    // medium AI: win if possible, else block, else random
+    private static void makeMediumMove(char[][] board, char symbol) {
+        char opponent = (symbol == 'X') ? 'O' : 'X';
+
+        // 1. Winning move
+        if (tryOneMoveWin(board, symbol, symbol)) {
+            return;
+        }
+        // 2. Blocking move (pretend to be the opponent to see their winning move, then place ours there)
+        if (tryOneMoveWin(board, symbol, opponent)) {
+            return;
+        }
+        // 3. Fallback random
+        makeEasyMove(board, symbol);
+    }
+
+    /**
+     * Tries every empty cell:
+     *   place 'target' there, check if 'target' wins.
+     * If yes, actually place 'symbolToPlace' there and return true.
+     * Otherwise revert and continue.
+     */
+    private static boolean tryOneMoveWin(char[][] board, char symbolToPlace, char target) {
+        for (int r = 0; r < 3; r++) {
+            for (int c = 0; c < 3; c++) {
+                if (board[r][c] == ' ') {
+                    board[r][c] = target;
+                    boolean wins = hasWon(board, target);
+                    board[r][c] = ' '; // revert
+                    if (wins) {
+                        board[r][c] = symbolToPlace;
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     // ---------------- helpers ----------------
