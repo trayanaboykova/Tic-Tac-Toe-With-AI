@@ -1,0 +1,26 @@
+type: edu
+files:
+  - name: src/tictactoe/Main.java
+    visible: true
+    learner_created: false
+  - name: test/utils/CellState.java
+    visible: false
+    learner_created: false
+  - name: test/utils/GameState.java
+    visible: false
+    learner_created: false
+  - name: test/utils/Grid.java
+    visible: false
+    learner_created: false
+  - name: test/utils/Minimax.java
+    visible: false
+    learner_created: false
+  - name: test/utils/Position.java
+    visible: false
+    learner_created: false
+  - name: test/TicTacToeTest.java
+    visible: false
+    learner_created: false
+feedback_link: https://hyperskill.org/projects/81/stages/450/implement#comment
+status: Unchecked
+record: -1
