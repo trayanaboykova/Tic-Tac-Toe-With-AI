@@ -1,34 +1,53 @@
 package tictactoe;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // 1. Read initial cells
-        System.out.print("Enter the cells: ");
-        String cells = scanner.nextLine();
-
-        // 2. Build the 3x3 board
+        // empty board
         char[][] board = new char[3][3];
-        int index = 0;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                char c = cells.charAt(index++);
-                board[i][j] = (c == '_') ? ' ' : c;
+                board[i][j] = ' ';
             }
         }
 
-        // 3. Print the initial board
         printBoard(board);
 
-        // 4. Ask for coordinates until the user enters a valid empty cell
+        boolean playerTurn = true; // X starts
+
+        while (true) {
+            if (playerTurn) {
+                makePlayerMove(scanner, board);   // X
+            } else {
+                System.out.println("Making move level \"easy\"");
+                makeEasyMove(board);              // O
+            }
+
+            printBoard(board);
+
+            String state = getGameState(board);
+            if (!"Game not finished".equals(state)) {
+                System.out.println(state);
+                break;
+            }
+
+            playerTurn = !playerTurn;
+        }
+    }
+
+    // ---------- moves ----------
+
+    private static void makePlayerMove(Scanner scanner, char[][] board) {
         while (true) {
             System.out.print("Enter the coordinates: ");
-            String line = scanner.nextLine();
+            String line = scanner.nextLine().trim();
+            String[] parts = line.split("\\s+");
 
-            String[] parts = line.trim().split("\\s+");
             if (parts.length != 2) {
                 System.out.println("You should enter numbers!");
                 continue;
@@ -48,7 +67,7 @@ public class Main {
                 continue;
             }
 
-            int r = row - 1; // 0-based indices
+            int r = row - 1;
             int c = col - 1;
 
             if (board[r][c] != ' ') {
@@ -56,26 +75,22 @@ public class Main {
                 continue;
             }
 
-            // 5. Decide whose move it is (X if counts equal, otherwise O)
-            int xCount = 0;
-            int oCount = 0;
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    if (board[i][j] == 'X') xCount++;
-                    else if (board[i][j] == 'O') oCount++;
-                }
-            }
-            char toMove = (xCount == oCount) ? 'X' : 'O';
-            board[r][c] = toMove;
+            board[r][c] = 'X';
             break;
         }
-
-        // 6. Print updated board
-        printBoard(board);
-
-        // 7. Print game state
-        System.out.println(getGameState(board));
     }
+
+    private static void makeEasyMove(char[][] board) {
+        Random random = new Random();
+        int r, c;
+        do {
+            r = random.nextInt(3);
+            c = random.nextInt(3);
+        } while (board[r][c] != ' ');
+        board[r][c] = 'O';
+    }
+
+    // ---------- board & state helpers ----------
 
     private static void printBoard(char[][] board) {
         System.out.println("---------");
@@ -141,7 +156,6 @@ public class Main {
                 board[2][0] == player) {
             return true;
         }
-
         return false;
     }
 }
