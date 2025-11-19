@@ -37,7 +37,9 @@ public class Main {
     }
 
     private static boolean isValidPlayerType(String type) {
-        return "user".equals(type) || "easy".equals(type) || "medium".equals(type);
+        // added "hard"
+        return "user".equals(type) || "easy".equals(type) ||
+                "medium".equals(type) || "hard".equals(type);
     }
 
     // ---------------- game loop ----------------
@@ -68,6 +70,10 @@ public class Main {
                 case "medium":
                     System.out.println("Making move level \"medium\"");
                     makeMediumMove(board, current);
+                    break;
+                case "hard": // NEW
+                    System.out.println("Making move level \"hard\"");
+                    makeHardMove(board, current);
                     break;
             }
 
@@ -140,7 +146,7 @@ public class Main {
         if (tryOneMoveWin(board, symbol, symbol)) {
             return;
         }
-        // 2. Blocking move (pretend to be the opponent to see their winning move, then place ours there)
+        // 2. Blocking move
         if (tryOneMoveWin(board, symbol, opponent)) {
             return;
         }
@@ -165,6 +171,95 @@ public class Main {
                         board[r][c] = symbolToPlace;
                         return true;
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    // -------- hard AI (minimax) ----------
+
+    private static void makeHardMove(char[][] board, char symbol) {
+        int[] bestMove = findBestMove(board, symbol);
+        board[bestMove[0]][bestMove[1]] = symbol;
+    }
+
+    private static int[] findBestMove(char[][] board, char aiSymbol) {
+        char opponent = (aiSymbol == 'X') ? 'O' : 'X';
+
+        int bestVal = Integer.MIN_VALUE;
+        int bestRow = -1;
+        int bestCol = -1;
+
+        for (int r = 0; r < 3; r++) {
+            for (int c = 0; c < 3; c++) {
+                if (board[r][c] == ' ') {
+                    // try move
+                    board[r][c] = aiSymbol;
+                    int moveVal = minimax(board, false, aiSymbol, opponent);
+                    board[r][c] = ' ';
+
+                    if (moveVal > bestVal) {
+                        bestVal = moveVal;
+                        bestRow = r;
+                        bestCol = c;
+                    }
+                }
+            }
+        }
+        return new int[]{bestRow, bestCol};
+    }
+
+    private static int minimax(char[][] board,
+                               boolean isMaximizing,
+                               char aiSymbol,
+                               char opponent) {
+
+        // terminal states
+        if (hasWon(board, aiSymbol)) {
+            return 10;
+        }
+        if (hasWon(board, opponent)) {
+            return -10;
+        }
+        if (!movesLeft(board)) {
+            return 0;
+        }
+
+        if (isMaximizing) {
+            int best = Integer.MIN_VALUE;
+            for (int r = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    if (board[r][c] == ' ') {
+                        board[r][c] = aiSymbol;
+                        best = Math.max(best,
+                                minimax(board, false, aiSymbol, opponent));
+                        board[r][c] = ' ';
+                    }
+                }
+            }
+            return best;
+        } else {
+            int best = Integer.MAX_VALUE;
+            for (int r = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    if (board[r][c] == ' ') {
+                        board[r][c] = opponent;
+                        best = Math.min(best,
+                                minimax(board, true, aiSymbol, opponent));
+                        board[r][c] = ' ';
+                    }
+                }
+            }
+            return best;
+        }
+    }
+
+    private static boolean movesLeft(char[][] board) {
+        for (int r = 0; r < 3; r++) {
+            for (int c = 0; c < 3; c++) {
+                if (board[r][c] == ' ') {
+                    return true;
                 }
             }
         }
